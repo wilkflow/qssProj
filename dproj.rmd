@@ -1,0 +1,57 @@
+
+
+we will be using text_emotion.csv for our data. Let us visualize this
+
+
+```{r}
+data = read.csv("./text_emotion.csv")
+
+
+```
+Data processing:
+
+
+```{r}
+library(wordcloud)
+library(tm)
+corpus = iconv(data$content)
+corpus = Corpus(VectorSource(corpus))
+inspect(corpus[1:5])
+corpus = tm_map(corpus, tolower)
+corpus = tm_map(corpus, removePunctuation)
+corpus = tm_map(corpus, removeNumbers)
+inspect(corpus[1:5])
+#get rid of stopwords
+cleanset <- tm_map(corpus, removeWords, stopwords('english'))
+inspect(cleanset[1:5])
+
+tdm <- TermDocumentMatrix(cleanset)
+#WARNING : THIS WILL BRICK UR COMPUTER FOR A SEC IF U DONT HAVE 15GB AVAILABLE SPACE. REMEMBER TO CLEAR SESSIONS
+tdm <- as.matrix(tdm)
+
+
+
+```
+
+Display/Visualize:
+
+```{r}
+w <- rowSums(tdm)
+w <- subset(w, w>=25)
+barplot(w,
+        las = 2,
+        col = rainbow(50))
+```
+
+```{r}
+w <- sort(rowSums(tdm), decreasing = TRUE)
+set.seed(222)
+wordcloud(words = names(w),
+          freq = w,
+          max.words = 150,
+          random.order = F,
+          min.freq = 5,
+          colors = brewer.pal(8, 'Dark2'),
+          scale = c(1.5, 0.5),
+          rot.per = 0.7)
+```
