@@ -1,4 +1,5 @@
 # Function to interact with Google's Gemini API
+library(httr)
 gemini <- function(prompts,
                    temperature = 0.0,
                    max_output_tokens = 1024,
@@ -6,7 +7,7 @@ gemini <- function(prompts,
                    model = "gemini-pro") {
   
   if (nchar(api_key) < 1) {
-    api_key <- readline("Paste your API key here: ")
+    api_key <- "api key goes here"
     Sys.setenv(GEMINI_API_KEY = api_key)
   }
   
@@ -39,7 +40,7 @@ gemini <- function(prompts,
 }
 
 # Read in your dataset
-text_emotion <- read.csv("C:/Users/mrepi/Downloads/text_emotion.csv")
+text_emotion <- read.csv("./text_emotion.csv")
 
 # Create a "gemini" column
 text_emotion$gemini <- NA
@@ -51,7 +52,7 @@ batch_size <- 10
 num_batches <- ceiling(nrow(text_emotion) / batch_size)
 
 # Start timing
-tic()
+#tic()
 
 for (i in 1:num_batches) {
   start_idx <- (i - 1) * batch_size + 1
@@ -77,7 +78,7 @@ for (i in 1:num_batches) {
 }
 
 # End timing
-toc()
+#toc()
 
 # Assuming your dataset is named text_emotion_with_gemini
 # Convert the lists to character vectors

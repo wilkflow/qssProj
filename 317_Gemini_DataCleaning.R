@@ -1,4 +1,4 @@
-text_emotion <- read.csv("C:/Users/mrepi/OneDrive/Documents/text_emotion.csv")
+text_emotion <- read.csv("./text_emotion.csv")
 head(text_emotion) #optional: check the beginning of the dataset
 
 #remove all NA's to only analyze Gemini's performance
@@ -16,7 +16,7 @@ map_sentiment <- function(value) {
 
 # Assuming your dataset is named text_emotion
 # Convert the numeric values in the gemini column to sentiment words
-text_emotion_only_gemini$gemini <- sapply(text_emotion_only_gemini$gemini, map_sentiment)
+text_emotion_only_gemini$gemini <- sapply(text_emotion_only_gemini, map_sentiment)
 
 # View the updated dataset
 #print(text_emotion_only_gemini)
