@@ -1,0 +1,139 @@
+---
+title: "GeminiProj"
+output: pdf_document
+date: "2024-05-08"
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(e1071)
+
+data <- read.csv("text_emotion_with_gemini.csv")
+head(data)
+str(data)
+
+sentiment_mapping <- c('anger' = 1, 'boredom' = 2, 'empty' = 3, 'enthusiasm' = 4,
+                       'fun' = 5, 'happiness' = 6, 'hate' = 7, 'love' = 8,
+                       'neutral' = 9, 'relief' = 10, 'sadness' = 11, 'surprise' = 12,
+                       'worry' = 13)
+
+data$sentiment <- as.integer(factor(data$sentiment, levels = names(sentiment_mapping), labels = sentiment_mapping))
+
+head(data$sentiment)
+```
+
+### Sentiment Plot
+
+```{r}
+sentiment_counts <- table(data$sentiment)
+
+ggplot(data, aes(x=factor(sentiment, levels = names(sentiment_counts)))) + 
+  geom_bar() + 
+  labs(x = "Sentiment", y = "Count", title = "Distribution of Sentiments") +
+  theme_minimal()
+```
+
+### Gemini Plot
+
+```{r}
+gemini_counts <- table(data$gemini)
+
+ggplot(data, aes(x=factor(gemini, levels = names(gemini_counts)))) +
+  geom_bar(fill = "steelblue") +
+  labs(x = "Gemini Sentiment", y = "Count", title = "Distribution of Gemini API Sentiments") +
+  theme_minimal()
+```
+
+### Comparison Plot
+
+```{r}
+cross_tab <- table(data$sentiment, data$gemini)
+
+ggplot(as.data.frame(cross_tab), aes(Var1, Freq, fill = Var2)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Original Sentiment", y = "Count", fill = "Gemini Sentiment", 
+       title = "Comparison of Original Sentiment and Gemini Classification") +
+  theme_minimal()
+
+```
+
+### Comparison Plot 2
+
+```{r}
+original_counts <- data %>% 
+  count(sentiment, name = "original_count")
+gemini_counts <- data %>% 
+  count(gemini, name = "gemini_count")
+levels_sentiment <- sort(as.numeric(unique(c(as.character(original_counts$sentiment), as.character(gemini_counts$gemini)))))
+levels_sentiment <- as.character(levels_sentiment)
+levels_sentiment[is.na(levels_sentiment)] <- "NA" 
+
+original_counts$sentiment <- factor(original_counts$sentiment, levels = levels_sentiment)
+gemini_counts$gemini <- factor(gemini_counts$gemini, levels = levels_sentiment)
+
+combined_counts <- full_join(original_counts, gemini_counts, by = c("sentiment" = "gemini"))
+plot_data <- tidyr::pivot_longer(combined_counts, cols = c("original_count", "gemini_count"), 
+                                 names_to = "type", values_to = "count")
+plot_data$count[is.na(plot_data$count)] <- 0
+
+ggplot(plot_data, aes(x = sentiment, y = count, fill = type)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.6) +
+  scale_fill_manual(values = c("original_count" = "blue", "gemini_count" = "red")) +
+  labs(x = "Sentiment", y = "Count", title = "Comparison of Original and Gemini Sentiment Counts") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+
+```
+
+## Word Cloud Prep
+### TEMPORARILY GREYED, NEED TO TROUBLESHOOT
+
+```{r}
+#library(wordcloud)
+#library(RColorBrewer)
+
+#gemini_to_sentiment <- c('1' = "anger", '2' = "boredom", '3' = "empty", '4' = "enthusiasm",
+#                         '5' = "fun", '6' = "happiness", '7' = "hate", '8' = "love",
+#                         '9' = "neutral", '10' = "relief", '11' = "sadness", '12' = "surprise",
+#                         '13' = "worry", 'NA' = "NA")
+#data$sentiment2 <- as.character(gemini_to_sentiment[as.character(data$gemini)])
+#data$sentiment2[is.na(data$sentiment2)] <- "Unknown"
+#table(data$sentiment2)
+
+```
+
+### Word Cloud Sentiment
+
+```{r}
+#wordcloud(names(sentiment_freq), freq = sentiment_freq, scale = c(3, 0.5), max.words = 100, random.order = FALSE, colors = brewer.pal(8, "Dark2"))
+```
+
+### Word Cloud Gemini
+
+```{r}
+#wordcloud(names(sentiment2_freq), freq = sentiment2_freq, scale = c(3, 0.5), max.words = 100, random.order = FALSE, colors = brewer.pal(8, "Set3"))
+```
+
+### Regression Analysis
+
+```{r}
+library(nnet)
+multinom_model <- multinom(sentiment ~ gemini, data = data)
+summary(multinom_model)
+```
+
+### Linear Regression Model
+
+```{r}
+lm_model <- lm(sentiment ~ gemini, data = data)
+summary(lm_model)
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
