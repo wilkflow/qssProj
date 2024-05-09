@@ -18,7 +18,6 @@ map_sentiment <- function(value) {
 # Convert the numeric values in the gemini column to sentiment words
 text_emotion_only_gemini$gemini <- sapply(text_emotion_only_gemini$gemini, map_sentiment)
 
-write.csv(text_emotion_only_gemini, "./text_emotion_proc_gemini.csv")
 # View the updated dataset
 #print(text_emotion_only_gemini)
 # Load required library for plotting
@@ -32,9 +31,10 @@ library(ggplot2)
 breaks <- seq(0, 600, by = 100)
 labels <- seq(0, 600, by = 100)
 custom_colors <- c("red", "orange", "yellow", "green", "blue", "cyan", "purple", "magenta", "pink", "brown", "tan3", "gray", "gray26")
+sentiment_long$Count <- as.numeric(sentiment_long$Count)
 
 # Create a stacked bar chart of sentiment distribution with custom colors
-ggplot(sentiment_long, aes(x = sentiment, y = count, fill = gemini)) +
+ggplot(sentiment_long, aes(x = sentiment, y = Count, fill = gemini)) +
   geom_bar(stat = "identity",) +
   labs(title = "Stacked Sentiment Distribution (Crowdworkers vs Gemini)",
        x = "Sentiment",
@@ -43,10 +43,3 @@ ggplot(sentiment_long, aes(x = sentiment, y = count, fill = gemini)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 0.5, size = 10), plot.title = element_text(size = 12, hjust = 0)) +
   scale_y_continuous(breaks = breaks, labels = labels)
-  
-
-
-
-
-
-
