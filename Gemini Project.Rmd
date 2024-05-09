@@ -90,6 +90,7 @@ ggplot(plot_data, aes(x = sentiment, y = count, fill = type)) +
 ### TEMPORARILY GREYED, NEED TO TROUBLESHOOT
 
 ```{r}
+library(wordcloud)
 #library(wordcloud)
 #library(RColorBrewer)
 
@@ -100,19 +101,49 @@ ggplot(plot_data, aes(x = sentiment, y = count, fill = type)) +
 #data$sentiment2 <- as.character(gemini_to_sentiment[as.character(data$gemini)])
 #data$sentiment2[is.na(data$sentiment2)] <- "Unknown"
 #table(data$sentiment2)
+library(tm)
+ndat = read.csv('./text_emotion_proc_gemini.csv')
 
 ```
 
 ### Word Cloud Sentiment
 
 ```{r}
-#wordcloud(names(sentiment_freq), freq = sentiment_freq, scale = c(3, 0.5), max.words = 100, random.order = FALSE, colors = brewer.pal(8, "Dark2"))
+corpus = iconv(ndat$sentiment)
+corpus = Corpus(VectorSource(corpus))
+
+
+tdm <- TermDocumentMatrix(corpus)
+tdm <- as.matrix(tdm)
+w <- sort(rowSums(tdm), decreasing = TRUE)
+wordcloud(words = names(w),
+          freq = w,
+          max.words = 150,
+          random.order = F,
+          min.freq = 5,
+          colors = brewer.pal(8, 'Dark2'),
+          scale = c(1.5, 0.5),
+          rot.per = 0.7)
 ```
 
 ### Word Cloud Gemini
 
 ```{r}
-#wordcloud(names(sentiment2_freq), freq = sentiment2_freq, scale = c(3, 0.5), max.words = 100, random.order = FALSE, colors = brewer.pal(8, "Set3"))
+corpus = iconv(ndat$gemini)
+corpus = Corpus(VectorSource(corpus))
+
+
+tdm <- TermDocumentMatrix(corpus)
+tdm <- as.matrix(tdm)
+w <- sort(rowSums(tdm), decreasing = TRUE)
+wordcloud(words = names(w),
+          freq = w,
+          max.words = 150,
+          random.order = F,
+          min.freq = 5,
+          colors = brewer.pal(8, 'Dark2'),
+          scale = c(1.5, 0.5),
+          rot.per = 0.7)
 ```
 
 ### Regression Analysis
