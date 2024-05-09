@@ -12,7 +12,7 @@ library(e1071)
 data <- read.csv("text_emotion_with_gemini.csv")
 head(data)
 str(data)
-data = na.omit(data)
+
 sentiment_mapping <- c('anger' = 1, 'boredom' = 2, 'empty' = 3, 'enthusiasm' = 4,
                        'fun' = 5, 'happiness' = 6, 'hate' = 7, 'love' = 8,
                        'neutral' = 9, 'relief' = 10, 'sadness' = 11, 'surprise' = 12,
@@ -150,6 +150,7 @@ wordcloud(words = names(w),
 
 ```{r}
 library(nnet)
+data = na.omit(data)
 multinom_model <- multinom(sentiment ~ gemini, data = data)
 summary(multinom_model)
 ```

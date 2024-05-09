@@ -17,7 +17,7 @@ map_sentiment <- function(value) {
 # Assuming your dataset is named text_emotion
 # Convert the numeric values in the gemini column to sentiment words
 text_emotion_only_gemini$gemini <- sapply(text_emotion_only_gemini$gemini, map_sentiment)
-
+write.csv(x=text_emotion_only_gemini,'./text_emotion_proc_gemini.csv')
 print(text_emotion_only_gemini) #Optional:View the updated dataset
 # Load required library for plotting
 # Convert the sentiment_distribution data into a long format
