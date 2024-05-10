@@ -14,10 +14,10 @@ map_sentiment <- function(value) {
   return(sentiment_map[value])
 }
 
-# Assuming your dataset is named text_emotion
+
 # Convert the numeric values in the gemini column to sentiment words
 text_emotion_only_gemini$gemini <- sapply(text_emotion_only_gemini$gemini, map_sentiment)
-write.csv(x=text_emotion_only_gemini,'./text_emotion_proc_gemini.csv')
+
 print(text_emotion_only_gemini) #Optional:View the updated dataset
 # Load required library for plotting
 # Convert the sentiment_distribution data into a long format
@@ -25,12 +25,16 @@ library(tidyr)
 library(ggplot2)
 
 # Convert the rownames of sentiment_distribution to a new column
+sentiment_distribution <- table(text_emotion_only_gemini$sentiment, text_emotion_only_gemini$gemini)
+sentiment_distribution <- as.data.frame.matrix(sentiment_distribution)
+sentiment_distribution$sentiment <- rownames(sentiment_distribution)
+
 # Define custom colors for the bar plot
 # Define breaks and labels for y-axis
 breaks <- seq(0, 600, by = 100)
 labels <- seq(0, 600, by = 100)
 custom_colors <- c("red", "orange", "yellow", "green", "blue", "cyan", "purple", "magenta", "pink", "brown", "tan3", "gray", "gray26")
-sentiment_long$count <- as.numeric(sentiment_long$count)
+sentiment_long <- tidyr::pivot_longer(sentiment_distribution, cols = -sentiment, names_to = "gemini", values_to = "count")
 
 # Create a stacked bar chart of sentiment distribution with custom colors
 ggplot(sentiment_long, aes(x = sentiment, y = count, fill = gemini)) +
