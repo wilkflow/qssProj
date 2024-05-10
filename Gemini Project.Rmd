@@ -167,12 +167,18 @@ library(caret) #lol it brokey bc forgor to factor
 c = confusionMatrix(as.factor(data$sentiment), as.factor(data$gemini), positive = NULL, dnn = c("Prediction", "Gemini"))
 
 plt <- as.data.frame(c$table)
-ggplot(plt, aes(Prediction,Gemini, fill= Freq)) +
-        geom_tile() + geom_text(aes(label=Freq)) +
-        scale_fill_gradient(low="white", high="#009194") +
-        labs(x = "Reference",y = "Gemini") +
-        scale_x_discrete(labels=c("anger", "boredom", "empty", "enthusiasm", "fun", "happiness", "hate", "love","neutral", "relief", "sadness", "surprise","worry")) +
-        scale_y_discrete(labels=c("anger", "boredom", "empty", "enthusiasm", "fun", "happiness", "hate", "love","neutral", "relief", "sadness", "surprise","worry"))
+ggplot(plt, aes(Prediction, rev(Gemini), fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq)) +
+  scale_fill_gradient(low = "white", high = "#009194") +
+  labs(x = "Crowdworker Classification", y = "Gemini") +
+  scale_x_discrete(labels = c("anger", "boredom", "empty", "enthusiasm", "fun", 
+                               "happiness", "hate", "love", "neutral", "relief", 
+                               "sadness", "surprise", "worry")) +
+  scale_y_discrete(labels = rev(c("anger", "boredom", "empty", "enthusiasm", "fun", 
+                                   "happiness", "hate", "love", "neutral", "relief", 
+                                   "sadness", "surprise", "worry"))) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
