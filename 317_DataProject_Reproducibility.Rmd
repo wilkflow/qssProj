@@ -1,5 +1,5 @@
 ---
-title: "HSS 371 Data Project Reproducibility materials"
+title: "HSS 371 Data Project Reproducibility Materials"
 author: Anthony Eryan, Kyle Rothwell, Savva Petrov  
 output: html_document
 date: "2024-05-10"
@@ -18,7 +18,7 @@ The function sends requests to the Gemini API, processes the responses, and retu
 
 
 
-## Gemini Output Cleaning and Output Analysis (Stacked Barplot)
+## Gemini Output Cleaning and Output Analysis
 
 **Figure 1** 
 *Stacked Crowdworker Sentiment Distribution (Crowdworkers vs Gemini Classification)*
@@ -141,7 +141,6 @@ ggplot(data, aes(x=factor(sentiment, levels = names(sentiment_counts)))) +
 
 
 
-## Distribution Gemini API Sentiments
 **Figure 4**
 *Gemini Sentiment Classification: Distribution of Sentiments*
 
