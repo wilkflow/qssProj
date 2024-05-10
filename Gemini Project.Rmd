@@ -177,5 +177,10 @@ ggplot(plt, aes(Prediction,Gemini, fill= Freq)) +
 ```
 
 ```{r}
+data$gemini <- factor(data$gemini)
+data$sentiment <- as.factor(data$sentiment)
+table_data <- table(data$gemini, data$sentiment)
+chi_squared_result <- chisq.test(table_data)
+chi_squared_result
 
 ```
