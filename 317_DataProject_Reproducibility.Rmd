@@ -156,6 +156,13 @@ ggplot(data, aes(x=factor(gemini, levels = names(gemini_counts)))) +
 
 ```{r}
 library(dplyr)
+data <- read.csv("text_emotion_with_gemini.csv")
+data = na.omit(data)
+sentiment_mapping <- c('anger' = 1, 'boredom' = 2, 'empty' = 3, 'enthusiasm' = 4,
+                       'fun' = 5, 'happiness' = 6, 'hate' = 7, 'love' = 8,
+                       'neutral' = 9, 'relief' = 10, 'sadness' = 11, 'surprise' = 12,
+                       'worry' = 13)
+data$sentiment <- as.integer(factor(data$sentiment, levels = names(sentiment_mapping), labels = sentiment_mapping))
 original_counts <- data %>% 
   count(sentiment, name = "original_count")
 gemini_counts <- data %>% 
