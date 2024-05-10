@@ -1,0 +1,189 @@
+---
+title: "HSS 371 Data Project Reproducibility materials"
+Name: Anthony Eryan, Kyle Rothwell, Savva Petrov  
+output: html_document
+date: "2024-05-10"
+---
+# Gemini Function
+
+The `gemini` function was created in order to utilize Google's Gemini API for text generation and sentiment analysis. It takes several parameters, including `prompts`, `temperature`, `max_output_tokens`, `api_key`, and `model`. Here's a breakdown of each parameter:
+
+- `prompts`: A vector containing the text prompts for which sentiment analysis is to be performed.
+- `temperature`: A parameter controlling the randomness of the text generation process. Higher values result in more random outputs.
+- `max_output_tokens`: The maximum number of tokens in the generated text.
+- `api_key`: The API key required for accessing the Gemini API. If not provided, the function prompts the user to input the API key.
+- `model`: The name of the model to be used for text generation. Default is "gemini-pro".
+
+The function sends requests to the Gemini API, processes the responses, and returns the generated text along with sentiment analysis results. More information of the source code can be found here: 
+https://github.com/wilkflow/qssProj/blob/main/317_Gemini_LLM.R 
+
+
+## Gemini Output Cleaning and Output Analysis (Stacked Barplot)
+
+**Figure 1** 
+*Stacked Crowdworker Sentiment Distribution (Crowdworkers vs Gemini Classification)*
+
+
+```{r}
+text_emotion <- read.csv("text_emotion.csv")
+head(text_emotion) #optional: check the beginning of the dataset
+
+#remove all NA's to only analyze Gemini's performance
+text_emotion_only_gemini <- na.omit(text_emotion)
+head(text_emotion_only_gemini) #optional: verify that the dataset was cleaned
+
+
+# Define a function to map numeric values to sentiment words
+map_sentiment <- function(value) {
+  sentiment_map <- c("anger", "boredom", "empty", "enthusiasm", "fun", 
+                     "happiness", "hate", "love", "neutral", "relief", 
+                     "sadness", "surprise", "worry")
+  return(sentiment_map[value])
+}
+
+
+# Convert the numeric values in the gemini column to sentiment words
+text_emotion_only_gemini$gemini <- sapply(text_emotion_only_gemini$gemini, map_sentiment)
+
+#print(text_emotion_only_gemini) 
+# Optional: View the updated dataset
+# Load required library for plotting
+# Convert the sentiment_distribution data into a long format
+library(tidyr)
+library(ggplot2)
+
+# Convert the rownames of sentiment_distribution to a new column
+sentiment_distribution <- table(text_emotion_only_gemini$sentiment, text_emotion_only_gemini$gemini)
+sentiment_distribution <- as.data.frame.matrix(sentiment_distribution)
+sentiment_distribution$sentiment <- rownames(sentiment_distribution)
+
+# Define custom colors for the bar plot
+# Define breaks and labels for y-axis
+breaks <- seq(0, 600, by = 100)
+labels <- seq(0, 600, by = 100)
+custom_colors <- c("red", "orange", "yellow", "green", "blue", "cyan", "purple", "magenta", "pink", "brown", "tan3", "gray", "gray26")
+sentiment_long <- tidyr::pivot_longer(sentiment_distribution, cols = -sentiment, names_to = "gemini", values_to = "count")
+
+# Create a stacked bar chart of sentiment distribution with custom colors
+ggplot(sentiment_long, aes(x = sentiment, y = count, fill = gemini)) +
+  geom_bar(stat = "identity",) +
+  labs(title = "Stacked Sentiment Distribution (Crowdworkers vs Gemini)",
+       x = "Sentiment",
+       y = "Frequency") +
+  scale_fill_manual(values = custom_colors) +  # Apply custom colors
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 0.5, size = 10), plot.title = element_text(size = 12, hjust = 0)) +
+  scale_y_continuous(breaks = breaks, labels = labels) # Text adjustment for the x and y axis respectively
+
+```
+
+##Confusion Matrix and Heatmap: Crowdworkers vs Gemini
+**Figure 2**
+*Confusion Matrix: Accuracy Between Gemini and Crowdworker Classification*
+
+
+```{r}
+# # Load necessary library
+# library(caret)
+# # Calculate confusion matrix
+# c = confusionMatrix(as.factor(data$sentiment), as.factor(data$gemini), positive = NULL, dnn = c("Prediction", "Gemini"))
+# # Convert confusion matrix to data frame
+# plt <- as.data.frame(c$table)
+# ggplot(plt, aes(Prediction, rev(Gemini), fill = Freq)) +
+#   geom_tile() + 
+#   geom_text(aes(label = Freq)) +
+#   scale_fill_gradient(low = "white", high = "#009194") +
+#   labs(x = "Crowdworker Classification", y = "Gemini") +
+#   scale_x_discrete(labels = c("anger", "boredom", "empty", "enthusiasm", "fun", 
+#                                "happiness", "hate", "love", "neutral", "relief", 
+#                                "sadness", "surprise", "worry")) +
+#   scale_y_discrete(labels = rev(c("anger", "boredom", "empty", "enthusiasm", "fun", 
+#                                    "happiness", "hate", "love", "neutral", "relief", 
+#                                    "sadness", "surprise", "worry"))) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+**Figure 3**
+*Crowdworker Sentiment Classification: Distribution of Sentiments*
+
+```{r}
+data <- read.csv("text_emotion_with_gemini.csv")
+sentiment_mapping <- c('anger' = 1, 'boredom' = 2, 'empty' = 3, 'enthusiasm' = 4,
+                       'fun' = 5, 'happiness' = 6, 'hate' = 7, 'love' = 8,
+                       'neutral' = 9, 'relief' = 10, 'sadness' = 11, 'surprise' = 12,
+                       'worry' = 13)
+data$sentiment <- as.integer(factor(data$sentiment, levels = names(sentiment_mapping), labels = sentiment_mapping))
+
+sentiment_counts <- table(data$sentiment)
+
+ggplot(data, aes(x=factor(sentiment, levels = names(sentiment_counts)))) + 
+  geom_bar() + 
+  labs(x = "Sentiment", y = "Count", title = "Distribution of Sentiments") +
+  theme_minimal()
+```
+
+
+
+## Distribution Gemini API Sentiments
+**Figure 4**
+*Gemini Sentiment Classification: Distribution of Sentiments*
+
+```{r}
+head(data)
+str(data)
+
+sentiment_mapping <- c('anger' = 1, 'boredom' = 2, 'empty' = 3, 'enthusiasm' = 4,
+                       'fun' = 5, 'happiness' = 6, 'hate' = 7, 'love' = 8,
+                       'neutral' = 9, 'relief' = 10, 'sadness' = 11, 'surprise' = 12,
+                       'worry' = 13)
+
+data$sentiment <- as.integer(factor(data$sentiment, levels = names(sentiment_mapping), labels = sentiment_mapping))
+
+gemini_counts <- table(data$gemini)
+
+ggplot(data, aes(x=factor(gemini, levels = names(gemini_counts)))) +
+  geom_bar(fill = "steelblue") +
+  labs(x = "Gemini Sentiment", y = "Count", title = "Distribution of Gemini API Sentiments") +
+  theme_minimal()
+```
+
+**Figure 5**
+*Gemini vs Crowdworker Sentiment Classification: Distribution of Sentiments*
+
+
+```{r}
+original_counts <- data %>% 
+  count(sentiment, name = "original_count")
+gemini_counts <- data %>% 
+  count(gemini, name = "gemini_count")
+levels_sentiment <- sort(as.numeric(unique(c(as.character(original_counts$sentiment), as.character(gemini_counts$gemini)))))
+levels_sentiment <- as.character(levels_sentiment)
+levels_sentiment[is.na(levels_sentiment)] <- "NA" 
+
+original_counts$sentiment <- factor(original_counts$sentiment, levels = levels_sentiment)
+gemini_counts$gemini <- factor(gemini_counts$gemini, levels = levels_sentiment)
+
+combined_counts <- full_join(original_counts, gemini_counts, by = c("sentiment" = "gemini"))
+plot_data <- tidyr::pivot_longer(combined_counts, cols = c("original_count", "gemini_count"), 
+                                 names_to = "type", values_to = "count")
+plot_data$count[is.na(plot_data$count)] <- 0
+
+ggplot(plot_data, aes(x = sentiment, y = count, fill = type)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.6) +
+  scale_fill_manual(values = c("original_count" = "blue", "gemini_count" = "red")) +
+  labs(x = "Sentiment", y = "Count", title = "Comparison of Original and Gemini Sentiment Counts") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+
+```
+##Chi-Squared Test
+```{r}
+data$gemini <- factor(data$gemini)
+data$sentiment <- as.factor(data$sentiment)
+table_data <- table(data$gemini, data$sentiment)
+chi_squared_result <- chisq.test(table_data)
+chi_squared_result
+
+```
