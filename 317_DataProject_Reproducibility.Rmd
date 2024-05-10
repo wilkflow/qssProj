@@ -14,8 +14,8 @@ The `gemini` function was created in order to utilize Google's Gemini API for te
 - `api_key`: The API key required for accessing the Gemini API. If not provided, the function prompts the user to input the API key.
 - `model`: The name of the model to be used for text generation. Default is "gemini-pro".
 
-The function sends requests to the Gemini API, processes the responses, and returns the generated text along with sentiment analysis results. More information of the source code can be found here: 
-https://github.com/wilkflow/qssProj/blob/main/317_Gemini_LLM.R 
+The function sends requests to the Gemini API, processes the responses, and returns the generated text along with sentiment analysis results. More information of the source code can be found [here](https://github.com/wilkflow/qssProj/blob/main/317_Gemini_LLM.R)  
+
 
 
 ## Gemini Output Cleaning and Output Analysis (Stacked Barplot)
@@ -25,7 +25,10 @@ https://github.com/wilkflow/qssProj/blob/main/317_Gemini_LLM.R
 
 
 ```{r}
-text_emotion <- read.csv("text_emotion.csv")
+data <- read.csv("text_emotion_with_gemini.csv")
+data = na.omit(data)
+
+text_emotion <- read.csv("text_emotion_with_gemini.csv")
 head(text_emotion) #optional: check the beginning of the dataset
 
 #remove all NA's to only analyze Gemini's performance
@@ -40,7 +43,7 @@ map_sentiment <- function(value) {
                      "sadness", "surprise", "worry")
   return(sentiment_map[value])
 }
-
+data$gemini <- sapply(data$gemini, map_sentiment)
 
 # Convert the numeric values in the gemini column to sentiment words
 text_emotion_only_gemini$gemini <- sapply(text_emotion_only_gemini$gemini, map_sentiment)
@@ -83,33 +86,38 @@ ggplot(sentiment_long, aes(x = sentiment, y = count, fill = gemini)) +
 
 
 ```{r}
-# # Load necessary library
-# library(caret)
-# # Calculate confusion matrix
-# c = confusionMatrix(as.factor(data$sentiment), as.factor(data$gemini), positive = NULL, dnn = c("Prediction", "Gemini"))
-# # Convert confusion matrix to data frame
-# plt <- as.data.frame(c$table)
-# ggplot(plt, aes(Prediction, rev(Gemini), fill = Freq)) +
-#   geom_tile() + 
-#   geom_text(aes(label = Freq)) +
-#   scale_fill_gradient(low = "white", high = "#009194") +
-#   labs(x = "Crowdworker Classification", y = "Gemini") +
-#   scale_x_discrete(labels = c("anger", "boredom", "empty", "enthusiasm", "fun", 
-#                                "happiness", "hate", "love", "neutral", "relief", 
-#                                "sadness", "surprise", "worry")) +
-#   scale_y_discrete(labels = rev(c("anger", "boredom", "empty", "enthusiasm", "fun", 
-#                                    "happiness", "hate", "love", "neutral", "relief", 
-#                                    "sadness", "surprise", "worry"))) +
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ # Load necessary library
+ library(caret)
+ # Calculate confusion matrix
+ c = confusionMatrix(as.factor(data$sentiment), as.factor(data$gemini), positive = NULL, dnn = c("Prediction", "Gemini"))
+ # Convert confusion matrix to data frame
+plt <- as.data.frame(c$table)
+ggplot(plt, aes(Prediction, rev(Gemini), fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq)) +
+  scale_fill_gradient(low = "white", high = "#009194") +
+  labs(x = "Crowdworker Classification", y = "Gemini") +
+  scale_x_discrete(labels = c("anger", "boredom", "empty", "enthusiasm", "fun", 
+                               "happiness", "hate", "love", "neutral", "relief", 
+                               "sadness", "surprise", "worry")) +
+  scale_y_discrete(labels = rev(c("anger", "boredom", "empty", "enthusiasm", "fun", 
+                                   "happiness", "hate", "love", "neutral", "relief", 
+                                   "sadness", "surprise", "worry"))) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 ```
-
+**Figure 2.5**
+*Confusion matrix output*
+```{r}
+print(c[3])
+```
 
 **Figure 3**
 *Crowdworker Sentiment Classification: Distribution of Sentiments*
 
 ```{r}
-data <- read.csv("text_emotion_with_gemini.csv")
+
 sentiment_mapping <- c('anger' = 1, 'boredom' = 2, 'empty' = 3, 'enthusiasm' = 4,
                        'fun' = 5, 'happiness' = 6, 'hate' = 7, 'love' = 8,
                        'neutral' = 9, 'relief' = 10, 'sadness' = 11, 'surprise' = 12,
@@ -134,13 +142,6 @@ ggplot(data, aes(x=factor(sentiment, levels = names(sentiment_counts)))) +
 head(data)
 str(data)
 
-sentiment_mapping <- c('anger' = 1, 'boredom' = 2, 'empty' = 3, 'enthusiasm' = 4,
-                       'fun' = 5, 'happiness' = 6, 'hate' = 7, 'love' = 8,
-                       'neutral' = 9, 'relief' = 10, 'sadness' = 11, 'surprise' = 12,
-                       'worry' = 13)
-
-data$sentiment <- as.integer(factor(data$sentiment, levels = names(sentiment_mapping), labels = sentiment_mapping))
-
 gemini_counts <- table(data$gemini)
 
 ggplot(data, aes(x=factor(gemini, levels = names(gemini_counts)))) +
@@ -154,6 +155,7 @@ ggplot(data, aes(x=factor(gemini, levels = names(gemini_counts)))) +
 
 
 ```{r}
+library(dplyr)
 original_counts <- data %>% 
   count(sentiment, name = "original_count")
 gemini_counts <- data %>% 
