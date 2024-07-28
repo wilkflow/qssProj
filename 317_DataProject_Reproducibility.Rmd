@@ -1,6 +1,6 @@
 ---
-title: "HSS 371 Data Project Reproducibility Materials"
-author: Anthony Eryan, Kyle Rothwell, Savva Petrov  
+title: "HSS 317 Data Project Reproducibility Materials"
+author: Anthony Eryan, Kyle Rothwell, Savva Petrov
 output: html_document
 date: "2024-05-10"
 ---
